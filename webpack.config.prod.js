@@ -17,7 +17,7 @@ module.exports = {
         minimizer: [new UglifyJSPlugin({
             uglifyOptions: {
                 output: {
-                    comments: false //use it for removing comments like "/*! ... */"
+                    comments: false
                 }
             }
         })]
