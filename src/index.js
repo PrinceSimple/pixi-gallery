@@ -436,7 +436,7 @@ function adaptFilters() {
 
   // loop through the colormatrix methods
   for (var i = 0; i < colorMatrixMethods.length; i++) {
-    // if the method is checked in DAT gui
+    // if the method is checked in HTML-GUI
     if (colorMatrixMethods[i]) {
       methods[i]();
     }
@@ -551,7 +551,7 @@ function onPointerUp() {
 function onPointerTap(e) {
   if (pointerDownDetail) {
     if (e.target._texture.textureCacheIds[0] != undefined) {
-      const url = e.target._texture.textureCacheIds[0].split('?')[0] + `?fm=jpg&w=${width-200}&h=${height-200}`
+      const url = e.target._texture.textureCacheIds[0].split('?')[0] + `?fm=jpg&w=${width - 200}&h=${height - 200}`
       showDetailImage(url)
       detailMenu.style.display = 'block'
       //detailShown = true
