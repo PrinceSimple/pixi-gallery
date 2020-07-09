@@ -1,3 +1,8 @@
+/*
+https://stackoverflow.com for background shader implementation
+https://www.shadertoy.com/view/4lSGRw #inspiration for stage fragment shader
+*/
+
 import * as PIXI from 'pixi.js'
 
 const backgroundFragmentShader = `
@@ -63,10 +68,9 @@ void main () {
   
   gl_FragColor = vec4(red, green, blue, 1.0);
 }`
+
 // Class to generate a random masonry layout, using a square grid as base
 class Grid {
-
-  // The constructor receives all the following parameters:
   // - gridSize: The size (width and height) for smallest unit size
   // - gridColumns: Number of columns for the grid (width = gridColumns * gridSize)
   // - gridRows: Number of rows for the grid (height = gridRows * gridSize)
@@ -143,7 +147,7 @@ const gridMin = 3
 const imagePadding = 20
 let gridColumnsCount, gridRowsCount, gridColumns, gridRows, grid
 let widthRest, heightRest, centerX, centerY, container, rects
-let detailImage, images, imagesUrls
+let detailImage, images, imagesUrls, colorMatrix
 
 // dimensions
 function initDimensions() {
@@ -181,9 +185,7 @@ function initGrid() {
 // Init the PixiJS Application
 function initApp() {
   // Create PixiJS Application, using the view (canvas) provided
-  app = new PIXI.Application({
-    view
-  })
+  app = new PIXI.Application({ view })
   app.renderer.autoDensity = true
   app.renderer.resize(width, height)
   const stageFilter = new PIXI.Filter(null, stageFragmentShader, uniforms)
@@ -198,7 +200,6 @@ function initBackground() {
   background.height = height
   // Get the code for the fragment shader from the loaded resources
   // Create a new Filter using the fragment shader
-  // We don't need a custom vertex shader, so we set it as `undefined`
   const backgroundFilter = new PIXI.Filter(null, backgroundFragmentShader, uniforms)
   // Assign the filter to the background Sprite
   background.filters = [backgroundFilter]
@@ -218,16 +219,12 @@ function loadTextureForImage(index) {
   const image = images[index]
   // Set the url to get a random image from Unsplash Source, given image dimensions
   const url = `https://source.unsplash.com/random/${image.width}x${image.height}`
-  // Get the corresponding rect, to store more data needed (it is a normal Object)
+  // Get the corresponding rect, to store more data needed
   const rect = rects[index]
   // Create a new AbortController, to abort fetch if needed
-  const {
-    signal
-  } = rect.controller = new AbortController()
+  const { signal } = rect.controller = new AbortController()
   // Fetch the image
-  fetch(url, {
-    signal
-  }).then(response => {
+  fetch(url, { signal }).then(response => {
     // Get image URL, and if it was downloaded before, load another image
     // Otherwise, save image URL and set the texture
     const id = response.url.split('?')[0]
@@ -327,7 +324,7 @@ function checkRectsAndImages() {
   })
 }
 
-// detail image menu
+//////////////////////// BEGIN IMAGE MENU //////////////////////
 const detailMenu = document.querySelector('#detailMenu')
 const saturation = document.querySelector('#satSlider')
 saturation.addEventListener('change', () => {
@@ -380,8 +377,8 @@ greyscale.addEventListener('change', () => {
   adaptFilters()
 })
 
-let colorMatrix = new PIXI.filters.ColorMatrixFilter()
-var colorMatrixMethods = [true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+colorMatrix = new PIXI.filters.ColorMatrixFilter()
+let colorMatrixMethods = [true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
 
 let params = {
   saturation: 0,
@@ -442,6 +439,7 @@ function adaptFilters() {
     }
   }
 }
+/////////////////// END OF IMAGE MENU CONTROL //////////////////////
 
 function showDetailImage(url) {
   detailImage = new PIXI.Sprite.from(url)
@@ -462,6 +460,7 @@ function buildDetailView() {
     fill: 0xcccccc,
     align: 'center'
   })
+
   detailView.setTransform(window.innerWidth / 2 - detailImage.width / 2 - imagePadding, window.innerHeight / 2 - detailImage.height / 2 - imagePadding)
   frame.beginFill(0x080808)
   frame.drawRoundedRect(-20, -20, detailImage.width + 40, detailImage.height + 40, 10)
@@ -491,6 +490,7 @@ function buildDetailView() {
   app.stage.addChild(detailView)
 }
 
+// helper function for image loader
 function rectIntersectsWithViewport(rect) {
   return (
     rect.x * gridSize + container.x <= width &&
@@ -500,6 +500,7 @@ function rectIntersectsWithViewport(rect) {
   )
 }
 
+// clone image into discrete container and download the image
 function onDownloadImage(e) {
   const fileName = 'image.png'
   const temp = new PIXI.Container()
@@ -534,10 +535,7 @@ function onDetailClose() {
 }
 
 function onPointerDown(e) {
-  const {
-    x,
-    y
-  } = e.data.global
+  const { x, y } = e.data.global
   pointerDownTarget = true
   pointerDownDetail = true
   pointerStart.set(x, y)
@@ -561,10 +559,7 @@ function onPointerTap(e) {
 
 function onPointerMove(e) {
   pointerDownDetail = false
-  const {
-    x,
-    y
-  } = e.data.global
+  const { x, y } = e.data.global
 
   if (pointerDownTarget) {
     diffX = pointerDiffStart.x + (x - pointerStart.x)
